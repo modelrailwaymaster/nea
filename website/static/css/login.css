@@ -33,6 +33,25 @@ img{
     padding-right: 0.25rem;
 }
 
+
 .auth-container{
     width: 296px;
+}
+
+.password-container{
+    position: relative;
+}
+
+.fa-eye{
+    position: absolute;
+    top: 32%;
+    right: 1%;
+    cursor: pointer
+}
+
+.fa-eye-slash{
+    position: absolute;
+    top: 32%;
+    right: 1%;
+    cursor: pointer
 }

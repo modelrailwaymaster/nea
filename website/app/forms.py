@@ -24,5 +24,7 @@ class create_user_form(UserCreationForm):
             "placeholder"] = "Enter your username"
         self.fields["password1"].widget.attrs["class"] = "input"
         self.fields["password1"].widget.attrs["placeholder"] = "Enter your password"
+        self.fields["password1"].widget.attrs["id"] = "password1"
         self.fields["password2"].widget.attrs["class"] = "input"
         self.fields["password2"].widget.attrs["placeholder"] = "Enter your password again"
+        self.fields["password2"].widget.attrs["id"] = "password2"

@@ -17,8 +17,9 @@
     </div>
     <div class="feild">
       <label class="label">Password</label>
-      <div class="control">
-        <input class="input" name="password" placeholder="Enter your password">
+      <div class="control" id="password-container">
+        <input class="input" name="password" placeholder="Enter your password" type="password" id="password">
+        <i id="show-password" class="fa-solid fa-eye" style="color: #222222;"></i>
       </div>
     </div>
     <br>
@@ -52,4 +53,6 @@
   </div>
 
 </div>
+
+<script src="{% static '/js/password-eye-login.js' %}"></script>
 {% endblock %}

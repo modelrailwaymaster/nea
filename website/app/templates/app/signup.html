@@ -39,14 +39,16 @@
         </div>
         <div class="field">
             <label class="label">Password</label>
-            <div class="control">
+            <div class="control" id="password-container">
               {{form.password1}}
+              <i id="show-password" class="fa-solid fa-eye" style="color: #222222;"></i>
             </div>
         </div>
         <div class="field">
             <label class="label">Password again</label>
-            <div class="control">
+            <div class="control" id="password-container2">
               {{form.password2}}
+              <i id="show-password2" class="fa-solid fa-eye" style="color: #222222;"></i>
             </div>
         </div>
 
@@ -81,4 +83,5 @@
     </div>
 
 </div>
+<script src="{% static '/js/password-eye-signup.js' %}"></script>
 {% endblock %}
