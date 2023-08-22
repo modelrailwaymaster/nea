@@ -1,3 +1,17 @@
 #message-container{
     padding: 20px;
 }
+
+.dark{
+    background-color: rgb(39, 39, 39);
+    color: rgb(175, 175, 175) !important;
+    
+}
+
+.light{
+    background-color: white;
+}
+
+html, body{
+    height: 100%;
+}

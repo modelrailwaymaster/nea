@@ -4,5 +4,39 @@
 {% block title %}Settings{% endblock %}
 {% block css %}<link rel="stylesheet" href="{% static '/css/settings.css'%}">{% endblock %}
 {% block content %}
-test2
+<script src="{% static '/js/settings.js' %}"></script>
+<div class="grid-container">
+    <div class="grid-item">
+        <div id="theme-text-container">
+            Theme:
+        </div>
+    </div>
+    <div class="grid-item">
+        <div class="tabs is-toggle is-toggle-rounded">
+            <ul>
+                <li id="theme-toggle-light" class="is-active">
+                    <a>
+                        <span class="icon is-small"><i class="fa-solid fa-sun"></i></span>
+                        <span>Light Mode</span>
+                    </a>
+                </li>
+                <li id="theme-toggle-dark">
+                    <a>
+                        <span class="icon is-small"><i class="fa-solid fa-moon"></i></span>
+                        <span>Dark Mode</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+    </div> 
+  </div>
+
+
+
+{% if user.is_authenticated %}
+
+{% endif %}
+
 {% endblock %}
