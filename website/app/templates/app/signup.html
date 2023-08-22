@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+{% extends "app/home.html" %}
+{% load static %}
+{% load socialaccount %}
+{% block title %}Signup{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static '/css/signup.css'%}">
+{% endblock %}
+{% block content %}
+<div id="form-container">
+    <div id="signup">Signup</div>
+    <form method="POST">
+
+        {% csrf_token %}
+        
+        <div class="field">
+            <label class="label">Username</label>
+            <div class="control">
+              {{form.username}}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">First Name</label>
+            <div class="control">
+              {{form.first_name}}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Surname</label>
+            <div class="control">
+              {{form.last_name}}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Email</label>
+            <div class="control">
+              {{form.email}}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Password</label>
+            <div class="control">
+              {{form.password1}}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Password again</label>
+            <div class="control">
+              {{form.password2}}
+            </div>
+        </div>
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-success" type="submit">Sign up</button>
+            </div>
+        </div>
+
+    </form>
+
+    <br>
+
+    <div class="auth-container">
+      <a href="{% provider_login_url 'google' %}?next=/">
+        <button class="content"> 
+          <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="google"/>
+          <span>Sign up with Google</span>
+        </button>
+      </a>
+    </div>
+
+    <br>
+
+    <div class="auth-container">
+      <a href="{% url 'sign_in' %}">
+        <button class="content"> 
+          <object type="image/svg+xml" data="https://s3-eu-west-1.amazonaws.com/cdn-testing.web.bas.ac.uk/scratch/bas-style-kit/ms-pictogram/ms-pictogram.svg" class="x-icon"></object>
+          <div>&nbspSign up with Microsoft</div>
+        </button>
+      </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+{% extends "app/home.html" %}
+{% load static %}
+{% load socialaccount %}
+{% block title %}Login{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static '/css/login.css' %}">{% endblock %}
+{% block content %}
+<div id="form-container">
+  <div id="login">Login</div>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="feild">
+      <label class="label">Username</label>
+      <div class="control">
+        <input class="input" name="username" placeholder="Enter your username">
+      </div>
+    </div>
+    <div class="feild">
+      <label class="label">Password</label>
+      <div class="control">
+        <input class="input" name="password" placeholder="Enter your password">
+      </div>
+    </div>
+    <br>
+    <div class="field is-grouped">
+      <div class="control">
+          <button class="button is-success" type="submit">Sign in</button>
+      </div>
+    </div>  
+  </form>
+
+  <br>
+
+  <div class="auth-container">
+    <a href="{% provider_login_url 'google' %}?next=/">
+      <button class="content"> 
+        <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="google"/>
+        <span>Sign in with Google</span>
+      </button>
+    </a>
+  </div>
+
+  <br>
+
+  <div class="auth-container">
+    <a href="{% url 'sign_in' %}">
+      <button class="content"> 
+        <object type="image/svg+xml" data="https://s3-eu-west-1.amazonaws.com/cdn-testing.web.bas.ac.uk/scratch/bas-style-kit/ms-pictogram/ms-pictogram.svg" class="x-icon"></object>
+        <div>&nbspLogin with Microsoft</div>
+      </button>
+    </a>
+  </div>
+
+</div>
+{% endblock %}
