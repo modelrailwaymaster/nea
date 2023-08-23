@@ -4,6 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from .forms import create_user_form
+from django.contrib.auth.models import User
 
 # Create your views here.
 
@@ -13,7 +14,24 @@ def home(response):
 
 
 def settings(response):
-    return render(response, "app/settings.html", {})
+    if response.user.is_authenticated:
+        current_user = User.objects.get(id=response.user.id)
+        form = create_user_form(response.POST or None, instance=current_user)
+        for field in form:
+            print("Field Error:", field.name,  field.errors)
+        if form.is_valid():
+            form.save()
+            login(response, current_user,
+                  backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(response, "Information updated")
+        elif response.method == "POST":
+            messages.success(response, "Information unable to be updated")
+
+        return render(response, "app/settings.html", {"form": form})
+
+    else:
+        form = create_user_form()
+        return render(response, "app/settings.html", {"form": form})
 
 
 def saved(response):

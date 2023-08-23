@@ -5,38 +5,93 @@
 {% block css %}<link rel="stylesheet" href="{% static '/css/settings.css'%}">{% endblock %}
 {% block content %}
 <script src="{% static '/js/settings.js' %}"></script>
-<div class="grid-container">
-    <div class="grid-item">
-        <div id="theme-text-container">
-            Theme:
-        </div>
+<div class="settings">
+    <div class="tabs is-toggle is-toggle-rounded">
+        <ul>
+            <li id="theme-toggle-light" class="is-active">
+                <a>
+                    <span class="icon is-small"><i class="fa-solid fa-sun"></i></span>
+                    <span>Light Mode</span>
+                </a>
+            </li>
+            <li id="theme-toggle-dark">
+                <a>
+                    <span class="icon is-small"><i class="fa-solid fa-moon"></i></span>
+                    <span>Dark Mode</span>
+                </a>
+            </li>
+        </ul>
     </div>
-    <div class="grid-item">
-        <div class="tabs is-toggle is-toggle-rounded">
-            <ul>
-                <li id="theme-toggle-light" class="is-active">
-                    <a>
-                        <span class="icon is-small"><i class="fa-solid fa-sun"></i></span>
-                        <span>Light Mode</span>
-                    </a>
-                </li>
-                <li id="theme-toggle-dark">
-                    <a>
-                        <span class="icon is-small"><i class="fa-solid fa-moon"></i></span>
-                        <span>Dark Mode</span>
-                    </a>
-                </li>
 
-            </ul>
+    {% if user.is_authenticated %}
+        <div id="form-container">
+            <form method="POST">
+
+                {% csrf_token %}
+                
+                <div class="field">
+                    <label class="label">Username</label>
+                    <div class="control">
+                    {{form.username}}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">First Name</label>
+                    <div class="control">
+                    {{form.first_name}}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Surname</label>
+                    <div class="control">
+                    {{form.last_name}}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                    {{form.email}}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Password</label>
+                    <div class="control" id="password-container">
+                    {{form.password1}}
+                    <i id="show-password" class="fa-solid fa-eye" style="color: #222222;"></i>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Password again</label>
+                    <div class="control" id="password-container2">
+                    {{form.password2}}
+                    <i id="show-password2" class="fa-solid fa-eye" style="color: #222222;"></i>
+                    </div>
+                </div>
+
+                <div class="field is-grouped">
+                    <div class="control">
+                    <button type="submit" class="btn btn-primary">Sign up</button>
+                    </div>
+                </div>
+
+            </form>
         </div>
 
-    </div> 
-  </div>
+        
+        <div class="grid-container">
+            <div class="username-text">
+
+            </div>
+            <div class="username-text">
+
+            </div>
+
+        </div>
 
 
 
-{% if user.is_authenticated %}
+    {% endif %}
 
-{% endif %}
-
+</div>
+<script src="{% static '/js/password-eye-signup.js' %}"></script>
 {% endblock %}

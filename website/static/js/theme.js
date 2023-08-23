@@ -1,8 +1,8 @@
 let labels = document.getElementsByClassName("label")
 labels = Array.prototype.slice.call( labels )
 theme = localStorage.getItem("theme")
-const lightthemebutton = document.getElementById("theme-toggle-light")
-const darkthemebutton = document.getElementById("theme-toggle-dark")
+let lightthemebutton = document.getElementById("theme-toggle-light")
+let darkthemebutton = document.getElementById("theme-toggle-dark")
 
 const darkmode = () => {
     localStorage.setItem("theme","true")
