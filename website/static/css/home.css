@@ -15,3 +15,13 @@
 html, body{
     height: 100%;
 }
+
+.forgot-password{
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.forgot-password-container{
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
