@@ -78,3 +78,13 @@ def logout_user(response):
     logout(response)
     messages.success(response, "Logged out")
     return redirect("/")
+
+
+def redirect_home_1(response):
+    messages.success(response, "Email sent")
+    return redirect("/")
+
+
+def redirect_home_2(response):
+    messages.success(response, "Password changed")
+    return redirect("/")

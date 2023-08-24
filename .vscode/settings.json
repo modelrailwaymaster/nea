@@ -5,5 +5,8 @@
     "signin",
     "socialaccount",
     "socialaccounts"
+  ],
+  "cSpell.ignoreWords": [
+    "uidb"
   ]
 }
