@@ -55,3 +55,7 @@ img{
     right: 1%;
     cursor: pointer
 }
+
+.label{
+    padding-top: 10px;
+}

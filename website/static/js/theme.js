@@ -3,6 +3,8 @@ labels = Array.prototype.slice.call( labels )
 theme = localStorage.getItem("theme")
 let lightthemebutton = document.getElementById("theme-toggle-light")
 let darkthemebutton = document.getElementById("theme-toggle-dark")
+let inputs = document.getElementsByTagName('input')
+inputs = Array.prototype.slice.call(inputs)
 
 const darkmode = () => {
     localStorage.setItem("theme","true")
@@ -10,6 +12,10 @@ const darkmode = () => {
     labels.forEach(element => {
         element.classList.add("dark")    
     })
+    inputs.forEach(element => {
+        element.classList.add("dark")
+    })
+    $('input').addClass('darkinput');
 }
     
 const lightmode = () => {
@@ -18,6 +24,11 @@ const lightmode = () => {
     labels.forEach(element => {
         element.classList.remove("dark")
     })
+    inputs.forEach(element => {
+        element.classList.remove("dark")
+        element.classList.remove('dark-placeholder');
+    })
+    $('input').removeClass('darkinput');
 }
 
 try{

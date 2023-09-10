@@ -10,7 +10,22 @@ from django.contrib.auth.models import User
 
 
 def home(response):
-    return render(response, "app/home.html", {})
+    if response.method == "POST":
+        search = response.POST['search']
+        min_price = response.POST['min_price']
+        max_price = response.POST['max_price']
+
+        inputted = {"search": search,
+                    "min_price": min_price,
+                    "max_price": max_price}
+        results = {}
+        return render(response, "app/home.html", {"inputted": inputted, "results": results})
+    else:
+        inputted = {"search": "",
+                    "min_price": "",
+                    "max_price": ""}
+        results = {}
+        return render(response, "app/home.html", {})
 
 
 def settings(response):

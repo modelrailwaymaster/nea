@@ -3,13 +3,22 @@
 }
 
 .dark{
-    background-color: rgb(39, 39, 39);
+    background-color: rgb(39, 39, 39)!important;
     color: rgb(175, 175, 175) !important;
     
 }
 
-.light{
-    background-color: white;
+.darkinput::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: rgb(175, 175, 175)!important;
+    opacity: 1!important; /* Firefox */
+}
+  
+.darkinput:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: rgb(175, 175, 175)!important;
+}
+  
+.darkinput::-ms-input-placeholder { /* Microsoft Edge */
+    color: rgb(175, 175, 175)!important;
 }
 
 html, body{
@@ -19,9 +28,71 @@ html, body{
 .forgot-password{
     font-size: 1rem;
     font-weight: 700;
+    color: #007af7;
 }
 
 .forgot-password-container{
     padding-top: 12px;
     padding-bottom: 12px;
+}
+
+.search-form{
+    width: 100%;
+}
+
+.home-grid{
+    display: grid;
+    grid-template-columns: minmax(200px, auto) 1fr !important;
+    width: 100%;
+    padding: 20px;
+}
+
+.home-grid-main{
+    width: 100%;
+    padding-left: 20px;
+}
+
+.search-input{
+    width: 90% !important;
+}
+.search-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.price-min{
+    width: 100px !important;
+}
+
+.price-max{
+    width: 100px !important;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.filter-title{
+    font-size: 25px;
+    padding: 5px;
+}
+
+.pound-sign{
+    position: relative;
+    top: 2px;
+    left: 17px;
+}
+.new-used-container{
+    align-items: left !important;
+}
+.min-max-container{
+    width: 120px;
 }
