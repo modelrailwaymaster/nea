@@ -14,16 +14,43 @@ def home(response):
         search = response.POST['search']
         min_price = response.POST['min_price']
         max_price = response.POST['max_price']
+        new = "".join(response.POST.getlist('new'))
+        used = "".join(response.POST.getlist('used'))
+        unknown = "".join(response.POST.getlist('unknown'))
+        n_gauge = "".join(response.POST.getlist('n_gauge'))
+        tt_gauge = "".join(response.POST.getlist('tt_gauge'))
+        oo9_gauge = "".join(response.POST.getlist('oo9_gauge'))
+        oo_gauge = "".join(response.POST.getlist('oo_gauge'))
+        o_gauge = "".join(response.POST.getlist('o_gauge'))
+        g_gauge = "".join(response.POST.getlist('g_gauge'))
 
         inputted = {"search": search,
                     "min_price": min_price,
-                    "max_price": max_price}
+                    "max_price": max_price,
+                    "new": new,
+                    "used": used,
+                    "unknown": unknown,
+                    "n_gauge": n_gauge,
+                    "tt_gauge": tt_gauge,
+                    "oo9_gauge": oo9_gauge,
+                    "oo_gauge": oo_gauge,
+                    "o_gauge": o_gauge,
+                    "g_gauge": g_gauge, }
         results = {}
         return render(response, "app/home.html", {"inputted": inputted, "results": results})
     else:
         inputted = {"search": "",
                     "min_price": "",
-                    "max_price": ""}
+                    "max_price": "",
+                    "new": "",
+                    "used": "",
+                    "unknown": "",
+                    "n_gauge": "",
+                    "tt_gauge": "",
+                    "oo9_gauge": "",
+                    "oo_gauge": "",
+                    "o_gauge": "",
+                    "g_gauge": "", }
         results = {}
         return render(response, "app/home.html", {})
 
