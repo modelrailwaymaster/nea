@@ -23,6 +23,10 @@ def home(response):
         oo_gauge = "".join(response.POST.getlist('oo_gauge'))
         o_gauge = "".join(response.POST.getlist('o_gauge'))
         g_gauge = "".join(response.POST.getlist('g_gauge'))
+        sorting_method = response.POST['sorting_method']
+        all_sorting_method = ["none", "price",
+                              "customer review", "newest first"]
+        all_sorting_method.remove(sorting_method)
 
         inputted = {"search": search,
                     "min_price": min_price,
@@ -35,10 +39,14 @@ def home(response):
                     "oo9_gauge": oo9_gauge,
                     "oo_gauge": oo_gauge,
                     "o_gauge": o_gauge,
-                    "g_gauge": g_gauge, }
+                    "g_gauge": g_gauge,
+                    "sorting_method": sorting_method,
+                    "all_sorting_method": all_sorting_method}
         results = {}
         return render(response, "app/home.html", {"inputted": inputted, "results": results})
     else:
+        all_sorting_method = ["price",
+                              "customer review", "newest first"]
         inputted = {"search": "",
                     "min_price": "",
                     "max_price": "",
@@ -50,9 +58,11 @@ def home(response):
                     "oo9_gauge": "",
                     "oo_gauge": "",
                     "o_gauge": "",
-                    "g_gauge": "", }
+                    "g_gauge": "",
+                    "sorting_method": "none",
+                    "all_sorting_method": all_sorting_method}
         results = {}
-        return render(response, "app/home.html", {})
+        return render(response, "app/home.html", {"inputted": inputted})
 
 
 def settings(response):

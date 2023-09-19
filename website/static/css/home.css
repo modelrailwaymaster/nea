@@ -44,16 +44,23 @@ html, body{
     display: grid;
     grid-template-columns: minmax(200px, auto) 1fr !important;
     width: 100%;
-    padding: 20px;
+    padding: 15px;
 }
 
 .home-grid-main{
     width: 100%;
-    padding-left: 20px;
+    padding: 10px;
+}
+
+.home-grid-filters{
+    background-color: rgb(235,235,235 );
+    border-radius: 15px;
+    padding: 10px;
 }
 
 .search-input{
-    width: 90% !important;
+    width: 80% !important;
+    margin-right: 0 !important;
 }
 .search-container{
     display: flex;
@@ -67,6 +74,11 @@ html, body{
 
 .price-max{
     width: 100px !important;
+}
+
+.search-button-container{
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 input::-webkit-outer-spin-button,
@@ -211,4 +223,12 @@ input[type=number] {
     align-items: left !important;
     -webkit-box-pack: left !important;
     justify-content: left !important;
+}
+
+.sorting-method{
+    border-color: #007bff !important;
+}
+
+.sorting-method:hover{
+    border-color: #0069d9 !important;
 }
