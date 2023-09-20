@@ -10,7 +10,7 @@ urlpatterns = [
     path("settings", views.settings, name="profile"),
     path("saved", views.saved, name="saved"),
     path("logout", views.logout_user, name="logout"),
-    path("reset-password", auth_views.PasswordResetView.as_view(template_name="app/password-reset-email.html", form_class=UserPasswordResetForm),
+    path("reset-password", auth_views.PasswordResetView.as_view(template_name="app/password-reset-email.html", html_email_template_name='app/password-reset-email.html', form_class=UserPasswordResetForm),
          name="reset_password"),
     path("reset-password-sent", views.redirect_home_1,
          name="password_reset_done"),
@@ -18,4 +18,5 @@ urlpatterns = [
          name="password_reset_confirm"),
     path("reset-password-complete", views.redirect_home_2,
          name="password_reset_complete"),
+    path("delete-account", views.delete_account, name="delete_account"),
 ]

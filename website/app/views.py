@@ -10,6 +10,16 @@ from django.contrib.auth.models import User
 
 
 def home(response):
+    all_sorting_method = ["none", "price",
+                          "customer review", "newest first"]
+    all_scales = {"N Gauge (1:148)": 'n_gauge',
+                  "TT Gauge (1:120)": 'tt_gauge',
+                  "OO9 Gauge (1:76)": 'oo9_gauge',
+                  "OO/HO Gauge (1:76)": 'oo_gauge',
+                  "O Gauge (1:43)": 'o_gauge',
+                  "G Gauge (1:22.5)": 'g_gauge',
+                  }
+
     if response.method == "POST":
         search = response.POST['search']
         min_price = response.POST['min_price']
@@ -24,8 +34,6 @@ def home(response):
         o_gauge = "".join(response.POST.getlist('o_gauge'))
         g_gauge = "".join(response.POST.getlist('g_gauge'))
         sorting_method = response.POST['sorting_method']
-        all_sorting_method = ["none", "price",
-                              "customer review", "newest first"]
         all_sorting_method.remove(sorting_method)
 
         inputted = {"search": search,
@@ -41,12 +49,13 @@ def home(response):
                     "o_gauge": o_gauge,
                     "g_gauge": g_gauge,
                     "sorting_method": sorting_method,
-                    "all_sorting_method": all_sorting_method}
+                    "all_sorting_method": all_sorting_method, }
+        print(inputted)
         results = {}
-        return render(response, "app/home.html", {"inputted": inputted, "results": results})
+        return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales})
     else:
-        all_sorting_method = ["price",
-                              "customer review", "newest first"]
+        all_sorting_method.remove("none")
+
         inputted = {"search": "",
                     "min_price": "",
                     "max_price": "",
@@ -60,9 +69,10 @@ def home(response):
                     "o_gauge": "",
                     "g_gauge": "",
                     "sorting_method": "none",
-                    "all_sorting_method": all_sorting_method}
+                    "all_sorting_method": all_sorting_method,
+                    "all_scales": all_scales}
         results = {}
-        return render(response, "app/home.html", {"inputted": inputted})
+        return render(response, "app/home.html", {"inputted": inputted, "all_scales": all_scales})
 
 
 def settings(response):
@@ -139,4 +149,11 @@ def redirect_home_1(response):
 
 def redirect_home_2(response):
     messages.success(response, "Password changed")
+    return redirect("/")
+
+
+def delete_account(response):
+    current_user = User.objects.get(id=response.user.id)
+    current_user.delete()
+    messages.success(response, "Account Deleted")
     return redirect("/")
