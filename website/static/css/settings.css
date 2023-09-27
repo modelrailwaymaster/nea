@@ -151,3 +151,7 @@ cursor: pointer
 padding: 5px 10px;
 cursor: pointer
 }
+
+.delete-account-container{
+  margin-top: 12px;
+}

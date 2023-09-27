@@ -60,13 +60,6 @@
                     <i id="show-password" class="fa-solid fa-eye" style="color: #222222;"></i>
                     </div>
                 </div>
-                <div class="field">
-                    <label class="label">Password again</label>
-                    <div class="control" id="password-container2">
-                    {{form.password2}}
-                    <i id="show-password2" class="fa-solid fa-eye" style="color: #222222;"></i>
-                    </div>
-                </div>
                 <div class="forgot-password-container">
                     <a class="forgot-password" href="/reset-password">Forgot password?</a>
                 </div>
@@ -75,8 +68,10 @@
                     <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </div>
-                <a><button type="submit" class="btn btn-danger ">Delete Account</button></a>
             </form>
+            <div class="delete-account-container">
+                <a><button id="delete-account" class="btn btn-danger ">Delete Account</button></a>
+            </div>
         </div>
 
         

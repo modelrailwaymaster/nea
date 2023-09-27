@@ -5,6 +5,10 @@ let lightthemebutton = document.getElementById("theme-toggle-light")
 let darkthemebutton = document.getElementById("theme-toggle-dark")
 let inputs = document.getElementsByTagName('input')
 inputs = Array.prototype.slice.call(inputs)
+let filter_background = document.getElementById("home-grid-filters")
+let checkbox_label = document.getElementsByClassName("checkbox-label")
+checkbox_label = Array.prototype.slice.call(checkbox_label)
+console.log(checkbox_label)
 
 const darkmode = () => {
     localStorage.setItem("theme","true")
@@ -15,7 +19,11 @@ const darkmode = () => {
     inputs.forEach(element => {
         element.classList.add("dark")
     })
+    checkbox_label.forEach(element => {
+        element.style.color = "rgb(250,0,0) !important"
+    })
     $('input').addClass('darkinput');
+    filter_background.style.backgroundColor = "rgb(50,50,50)"
 }
     
 const lightmode = () => {
@@ -27,6 +35,9 @@ const lightmode = () => {
     inputs.forEach(element => {
         element.classList.remove("dark")
         element.classList.remove('dark-placeholder');
+    })
+    checkbox_label.forEach(element => {
+        element.style.color = "rgb(0,250,0) !important"
     })
     $('input').removeClass('darkinput');
 }

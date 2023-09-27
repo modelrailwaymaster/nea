@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm
-from .forms import create_user_form
+from .forms import create_user_form, update_user_details_form
 from django.contrib.auth.models import User
 
 # Create your views here.
@@ -42,15 +40,17 @@ def home(response):
                     "new": new,
                     "used": used,
                     "unknown": unknown,
-                    "n_gauge": n_gauge,
-                    "tt_gauge": tt_gauge,
-                    "oo9_gauge": oo9_gauge,
-                    "oo_gauge": oo_gauge,
-                    "o_gauge": o_gauge,
-                    "g_gauge": g_gauge,
                     "sorting_method": sorting_method,
                     "all_sorting_method": all_sorting_method, }
-        print(inputted)
+
+        all_scales = {"N Gauge (1:148)": {"on": n_gauge, "id": "n_gauge"},
+                      "TT Gauge (1:120)": {"on": tt_gauge, "id": "tt_gauge"},
+                      "OO9 Gauge (1:76)": {"on": oo9_gauge, "id": "oo9_gauge"},
+                      "OO/HO Gauge (1:76)": {"on": oo_gauge, "id": "oo_gauge"},
+                      "O Gauge (1:43)": {"on": o_gauge, "id": "o_gauge"},
+                      "G Gauge (1:22.5)": {"on": g_gauge, "id": "g_gauge"},
+                      }
+
         results = {}
         return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales})
     else:
@@ -78,9 +78,8 @@ def home(response):
 def settings(response):
     if response.user.is_authenticated:
         current_user = User.objects.get(id=response.user.id)
-        form = create_user_form(response.POST or None, instance=current_user)
-        for field in form:
-            print("Field Error:", field.name,  field.errors)
+        form = update_user_details_form(
+            response.POST or None, instance=current_user)
         if form.is_valid():
             form.save()
             login(response, current_user,
@@ -92,8 +91,7 @@ def settings(response):
         return render(response, "app/settings.html", {"form": form})
 
     else:
-        form = create_user_form()
-        return render(response, "app/settings.html", {"form": form})
+        return render(response, "app/settings.html", {})
 
 
 def saved(response):

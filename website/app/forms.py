@@ -30,6 +30,17 @@ class create_user_form(UserCreationForm):
         self.fields["password2"].widget.attrs["id"] = "password2"
 
 
+class update_user_details_form(create_user_form):
+    class Meta:
+        model = User
+        fields = {"username", "first_name", "last_name",
+                  "email", "password1"}
+
+    def __init__(self, *args, **kwargs):
+        super(update_user_details_form, self).__init__(*args, **kwargs)
+        self.fields.pop('password2')
+
+
 class UserPasswordResetForm(PasswordResetForm):
     def __init__(self, *args, **kwargs):
         super(UserPasswordResetForm, self).__init__(*args, **kwargs)

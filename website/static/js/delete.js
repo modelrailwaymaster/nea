@@ -30,6 +30,6 @@ $(this).parents('.dialog-ovelay').fadeOut(500, function () {
 });
 
 }
-$('a').click(function () {
+$('#delete-account').click(function () {
 Confirm('Delete Account', 'Are you sure you want to delete your account?', 'Yes', 'Cancel', "/delete-account"); /*change*/
 });
