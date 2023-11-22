@@ -4,6 +4,11 @@ from django.contrib import messages
 from .forms import create_user_form, update_user_details_form
 from django.contrib.auth.models import User
 
+from ebaysdk.exception import ConnectionError
+from ebaysdk.finding import Connection
+import json
+
+
 # Create your views here.
 
 
@@ -51,7 +56,7 @@ def home(response):
                       "G Gauge (1:22.5)": {"on": g_gauge, "id": "g_gauge"},
                       }
 
-        results = {}
+        results = get_responses(inputted, all_scales)
         return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales})
     else:
         all_sorting_method.remove("none")
@@ -155,3 +160,34 @@ def delete_account(response):
     current_user.delete()
     messages.success(response, "Account Deleted")
     return redirect("/")
+
+
+def get_responses(inputted, all_scales):
+    Ebay_number_of_returns = 1
+    print(inputted)
+
+    ebay_filters = []
+    if inputted["new"] == "on":
+        ebay_filters.append({"name": "condition", "value": "new"})
+    if inputted["used"] == "on":
+        ebay_filters.append({"name": "condition", "value": "used"})
+    if inputted["unknown"] == "on":
+        ebay_filters.append({"name": "condition", "value": "unknown"})
+
+    api = Connection(domain='svcs.sandbox.ebay.com',
+                     appid='HenryOwe-NEA-SBX-2ac348da7-f6ef1a16', config_file=None)
+    request = {
+        'keywords': inputted["search"],
+        'itemFilter': ebay_filters,
+        'paginationInput': {
+            'entriesPerPage': Ebay_number_of_returns,
+            'pageNumber': 1
+        },
+        'sortOrder': 'PricePlusShippingLowest'
+    }
+    response = api.execute('findItemsAdvanced', request)
+
+    json_object = json.loads(response.json())
+    print(json.dumps(json_object, indent=3))
+    results = {}
+    return results
