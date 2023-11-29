@@ -56,7 +56,10 @@ def home(response):
                       "G Gauge (1:22.5)": {"on": g_gauge, "id": "g_gauge"},
                       }
 
-        results = get_responses(inputted, all_scales)
+        if inputted["search"] == "":
+            results = None
+        else:
+            results = get_responses(inputted, all_scales)
         return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales})
     else:
         all_sorting_method.remove("none")
@@ -164,15 +167,11 @@ def delete_account(response):
 
 def get_responses(inputted, all_scales):
     Ebay_number_of_returns = 1
+    results_class_list = []
+    results = {}
     print(inputted)
 
     ebay_filters = []
-    if inputted["new"] == "on":
-        ebay_filters.append({"name": "condition", "value": "new"})
-    if inputted["used"] == "on":
-        ebay_filters.append({"name": "condition", "value": "used"})
-    if inputted["unknown"] == "on":
-        ebay_filters.append({"name": "condition", "value": "unknown"})
 
     api = Connection(domain='svcs.sandbox.ebay.com',
                      appid='HenryOwe-NEA-SBX-2ac348da7-f6ef1a16', config_file=None)
@@ -183,11 +182,43 @@ def get_responses(inputted, all_scales):
             'entriesPerPage': Ebay_number_of_returns,
             'pageNumber': 1
         },
-        'sortOrder': 'PricePlusShippingLowest'
+        'sortOrder': 'PricePlusShippingLowest',
     }
-    response = api.execute('findItemsAdvanced', request)
 
-    json_object = json.loads(response.json())
-    print(json.dumps(json_object, indent=3))
-    results = {}
+    response = json.loads(api.execute(
+        'findItemsAdvanced', request).json()).get("searchResult").get("item")
+
+    for item in response:
+        results_class_list.append(result_class(
+            item.get("title"),
+            item.get("sellingStatus").get("currentPrice").get("value"),
+            item.get("shippingInfo").get("shippingServiceCost").get("value"),
+            item.get("sellingStatus").get("currentPrice").get("_currencyId"),
+            item.get("viewItemURL"),
+            item.get("location"),
+            item.get("viewItemURL"),
+            "ebay"))
+
+    for result in results_class_list:
+        results[""] = result.get_dict()
+
     return results
+
+
+class result_class():
+    def __init__(self, name, price, shipping_cost, currency, url, location, image, website):
+        self.name = name
+        self.price = price
+        self.shipping_cost = shipping_cost
+        self.currency = currency
+        self.url = url
+        self.location = location
+        self.image = image
+        self.website = website
+
+    def get_dict(self):
+        return {"name": self.name, "price": self.price, "shipping_cost": self.shipping_cost, "url": self.url, "location": self.location, "image": self.image, "website": self.website}
+
+    def display(self):
+        print("name:", self.name, "price:", self.price, "shipping_cost:", self.shipping_cost, "url:",
+              self.url, "location:", self.location, "image:", self.image, "website:", self.website)
