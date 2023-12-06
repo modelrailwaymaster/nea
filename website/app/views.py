@@ -59,8 +59,8 @@ def home(response):
         if inputted["search"] == "":
             results = None
         else:
-            results = get_responses(inputted, all_scales)
-        return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales})
+            average, results = get_responses(inputted, all_scales)
+        return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales, "average": average})
     else:
         all_sorting_method.remove("none")
 
@@ -80,7 +80,7 @@ def home(response):
                     "all_sorting_method": all_sorting_method,
                     "all_scales": all_scales}
         results = {}
-        return render(response, "app/home.html", {"inputted": inputted, "all_scales": all_scales})
+        return render(response, "app/home.html", {"inputted": inputted, "all_scales": all_scales, "average": "-"})
 
 
 def settings(response):
@@ -166,10 +166,9 @@ def delete_account(response):
 
 
 def get_responses(inputted, all_scales):
-    Ebay_number_of_returns = 1
+    Ebay_number_of_returns = 2
     results_class_list = []
-    results = {}
-    print(inputted)
+    results = []
 
     ebay_filters = []
 
@@ -200,16 +199,22 @@ def get_responses(inputted, all_scales):
             "ebay"))
 
     for result in results_class_list:
-        results[""] = result.get_dict()
+        results.append(result.get_dict())
 
-    return results
+    average = 0
+    for result in results_class_list:
+        average += float(result.price)
+    average /= len(results_class_list)
+    average = ("%.2f" % float(average))
+
+    return average, results
 
 
 class result_class():
     def __init__(self, name, price, shipping_cost, currency, url, location, image, website):
         self.name = name
-        self.price = price
-        self.shipping_cost = shipping_cost
+        self.price = ("%.2f" % float(price))
+        self.shipping_cost = ("%.2f" % float(shipping_cost))
         self.currency = currency
         self.url = url
         self.location = location

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <form class="form-inline search-form" method="POST" action="{% url 'home' %}">
+    {% load static %}
     {% csrf_token %}
     <div class="home-grid">
         <div class="home-grid-filters" id="home-grid-filters">
@@ -99,13 +100,23 @@
                     {% endfor %}
                     </select>
                 </div>
+                <div class="average"><div class="average-text">Average Price: £{{average}}</div></div>
             </div>
-            <div class="results-container">
-                {{results}}
-                {% for result in results %}
-                    hi,{{result}}
-                {% endfor %}
-            </div>
+            {% for result in results %}
+                <div class="results-container">
+                    <div class="result-bubble">
+                        <div class="result-image">
+                            <img src="{% static 'images/EbayLogo.png' %}" alt="Ebay Logo" height="100" width="75%">
+                        </div>
+                        <div class="reuslt-text">
+                            <a href="{{result.url}}" target="_blank"><div class="result-title">{{result.name}}</div></a>
+                            <div class="results-description">description</div>
+                            <div class="result-price">Price: £{{result.price}}</div>
+                            <div class="result-price">Shipping: £{{result.shipping_cost}}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </form>

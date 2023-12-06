@@ -232,3 +232,54 @@ input[type=number] {
 .sorting-method:hover{
     border-color: #0069d9 !important;
 }
+
+.result-bubble{
+    padding: 10px;
+    border: 2px solid darkgrey;
+    border-radius: 10px;
+    color: black !important;
+    display: grid;
+    grid-template-columns: minmax(200px, auto) 1fr !important;
+}
+
+.result-title{
+    font-size: 25px !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    color: black !important;
+}
+
+.result-price{
+    font-size: 20px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.result-image{
+    padding-right: 5px;
+}
+
+.result-text{
+    padding-left: 5px;
+}
+
+.results-container{
+    padding-bottom: 5px;
+}
+
+.average{
+    font-size: 20px !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    color: black !important;
+    height: 40px;
+    margin-left: 10px;
+    height: 40px;
+    min-width: 200px;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+}
+
+.average-text{
+    text-align: center;
+}
