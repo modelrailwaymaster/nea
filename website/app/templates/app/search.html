@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<form class="form-inline search-form" method="POST" action="{% url 'home' %}">
+<form  class="form-inline search-form" method="POST" action="{% url 'home' %}">
     {% load static %}
     {% csrf_token %}
     <div class="home-grid">
@@ -85,13 +85,13 @@
             </label>
             {% endfor %}
             <br>
-            <button class="btn my-2 my-sm-0 btn-primary search-button" type="submit">Update</button>
+            <button name="form-update" class="btn my-2 my-sm-0 btn-primary search-button" type="submit">Update</button>
         </div>
         <div class="home-grid-main">
             {% csrf_token %}
             <div class="search-container">
                 <input class="form-control mr-sm-2 search-input" type="search" placeholder="Search" aria-label="Search" name="search" value="{{inputted.search}}">
-                <div class="search-button-container"><button class="btn my-2 my-sm-0 btn-primary search-button" type="submit">Search</button></div>
+                <div class="search-button-container"><button name="form-search" class="btn my-2 my-sm-0 btn-primary search-button" type="submit">Search</button></div>
                 <div class="select is-info">
                     <select id="sorting_method" name="sorting_method" class="sorting-method">
                     <option value="{{inputted.sorting_method}}">{{inputted.sorting_method}}</option>
@@ -103,19 +103,35 @@
                 <div class="average"><div class="average-text">Average Price: £{{average}}</div></div>
             </div>
             {% for result in results %}
-                <div class="results-container">
-                    <div class="result-bubble">
-                        <div class="result-image">
-                            <img src="{% static 'images/EbayLogo.png' %}" alt="Ebay Logo" height="100" width="75%">
-                        </div>
-                        <div class="reuslt-text">
-                            <a href="{{result.url}}" target="_blank"><div class="result-title">{{result.name}}</div></a>
-                            <div class="results-description">description</div>
-                            <div class="result-price">Price: £{{result.price}}</div>
-                            <div class="result-price">Shipping: £{{result.shipping_cost}}</div>
+                <form method="POST" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <div class="results-container">
+                        <div class="result-bubble">
+                            {% if result.website == "Ebay" %}
+                                <div class="result-image">
+                                    <img src="{% static 'images/EbayLogo.png' %}" alt="Ebay Logo" width="200">
+                                </div>
+                            {% elif result.website == "Amazon" %}
+                                <div class="result-image">
+                                    <img src="{% static 'images/AmazonLogo.png' %}" alt="Amazon Logo" width="200">
+                                </div>
+                            {% endif %}
+                            <div class="reuslt-text">
+                                <a href="{{result.url}}" target="_blank"><div class="result-title">{{result.name}}</div></a>
+                                <div class="results-description">description</div>
+                                <div class="results-bottom">
+                                    <div class="results-price-save">
+                                        <button name="{{result}}" class="btn my-sm-0 btn-primary save-button" type="submit">Save</button>
+                                        <div>
+                                            <div class="result-price">Price: £{{result.price}}</div>
+                                            <div class="result-price">Shipping: £{{result.shipping_cost}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
             {% endfor %}
         </div>
     </div>

@@ -3,10 +3,14 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from .forms import create_user_form, update_user_details_form
 from django.contrib.auth.models import User
+from app.models import user_saved, listing
+from django.http import HttpResponseRedirect
 
 from ebaysdk.exception import ConnectionError
 from ebaysdk.finding import Connection
 import json
+import requests
+import operator
 
 
 # Create your views here.
@@ -24,6 +28,7 @@ def home(response):
                   }
 
     if response.method == "POST":
+
         search = response.POST['search']
         min_price = response.POST['min_price']
         max_price = response.POST['max_price']
@@ -58,8 +63,30 @@ def home(response):
 
         if inputted["search"] == "":
             results = None
-        else:
+            average = "-"
+        elif 'form-search' in response.POST:
             average, results = get_responses(inputted, all_scales)
+        elif 'form-update' in response.POST:
+            results = None
+            average = "-"
+        else:
+            if response.user.is_authenticated:
+                for element in response.POST:
+                    if "{" in element:
+                        listing = json.loads(element.replace("'", '"'))
+                done = save_listing(response, listing)
+                results = None
+                average = "-"
+                if done:
+                    messages.success(response, "Your listing has been saved.")
+                else:
+                    messages.success(
+                        response, "Listing couldn't be save. This may be due to you already having it <a href='/saved'>saved</a>.")
+            else:
+                messages.success(
+                    response, "You need to <a href='/login'>login</a> to save a result.")
+                results = None
+                average = "-"
         return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales, "average": average})
     else:
         all_sorting_method.remove("none")
@@ -165,16 +192,32 @@ def delete_account(response):
     return redirect("/")
 
 
+def save_listing(response, wanted_listing):
+    if not listing.objects.filter(link=wanted_listing["url"]).exists():
+        save_listing = listing.objects.create(
+            latest_price=wanted_listing["price"], link=wanted_listing["url"], website=wanted_listing["website"])
+    else:
+        save_listing = listing.objects.all().filter(link=wanted_listing["url"])
+    if not user_saved.objects.filter(user=response.user).exists():
+        user_saved.objects.create(
+            user=response.user, listing=save_listing, wanted_price=-1)
+        return True
+    else:
+        return False
+
+
 def get_responses(inputted, all_scales):
-    Ebay_number_of_returns = 2
+    Ebay_number_of_returns = 7
+    Amazon_number_of_returns = 7
     results_class_list = []
     results = []
 
+    # ebay
     ebay_filters = []
 
     api = Connection(domain='svcs.sandbox.ebay.com',
                      appid='HenryOwe-NEA-SBX-2ac348da7-f6ef1a16', config_file=None)
-    request = {
+    ebay_params = {
         'keywords': inputted["search"],
         'itemFilter': ebay_filters,
         'paginationInput': {
@@ -184,10 +227,10 @@ def get_responses(inputted, all_scales):
         'sortOrder': 'PricePlusShippingLowest',
     }
 
-    response = json.loads(api.execute(
-        'findItemsAdvanced', request).json()).get("searchResult").get("item")
+    ebay_response = json.loads(api.execute('findItemsAdvanced', ebay_params).json()).get(
+        "searchResult").get("item")
 
-    for item in response:
+    for item in ebay_response:
         results_class_list.append(result_class(
             item.get("title"),
             item.get("sellingStatus").get("currentPrice").get("value"),
@@ -196,7 +239,46 @@ def get_responses(inputted, all_scales):
             item.get("viewItemURL"),
             item.get("location"),
             item.get("viewItemURL"),
-            "ebay"))
+            "",
+            "Ebay"))
+
+    # amazon
+    # amazon_params = {
+    #    'api_key': '5A6709D3BB1C4232BB93E0955F9934BD',
+    #    'type': 'search',
+    #    'amazon_domain': 'amazon.com',
+    #    'search_term': inputted["search"],
+    #    'output': 'json',
+    #    'page': '1'
+    # }
+
+    # amazon_results = requests.get(
+    #    'https://api.asindataapi.com/request', amazon_params).json().get("search_results")
+    # for i in range(Amazon_number_of_returns):
+    #    results_class_list.append(result_class(
+    #        amazon_results[i].get("title"),
+    #        amazon_results[i].get("price").get("value"),
+    #        0,
+    #        amazon_results[i].get("price").get("currency"),
+    #        amazon_results[i].get("link"),
+    #        None,
+    #        amazon_results[i].get("image"),
+    #        "",
+    #        "Amazon"
+    #    ))
+
+    # sorting
+    # sort = True
+    # if inputted["sorting_method"] == "none":
+    #    sort = False
+    # elif inputted["sorting_method"] == "price":
+    #    sorting_mode = "price"
+    # elif inputted["sorting_method"] == "customer review":
+    #    sorting_mode
+
+    # if sort:
+    #    results_class_list = sorted(
+    #        results_class_list, key=operator.attrgetter(sorting_mode))
 
     for result in results_class_list:
         results.append(result.get_dict())
@@ -211,7 +293,7 @@ def get_responses(inputted, all_scales):
 
 
 class result_class():
-    def __init__(self, name, price, shipping_cost, currency, url, location, image, website):
+    def __init__(self, name, price, shipping_cost, currency, url, location, image, review, website):
         self.name = name
         self.price = ("%.2f" % float(price))
         self.shipping_cost = ("%.2f" % float(shipping_cost))
@@ -219,6 +301,7 @@ class result_class():
         self.url = url
         self.location = location
         self.image = image
+        self.review = review
         self.website = website
 
     def get_dict(self):
