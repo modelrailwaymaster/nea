@@ -29,46 +29,44 @@ def home(response):
 
     if response.method == "POST":
 
-        search = response.POST['search']
-        min_price = response.POST['min_price']
-        max_price = response.POST['max_price']
-        new = "".join(response.POST.getlist('new'))
-        used = "".join(response.POST.getlist('used'))
-        unknown = "".join(response.POST.getlist('unknown'))
-        n_gauge = "".join(response.POST.getlist('n_gauge'))
-        tt_gauge = "".join(response.POST.getlist('tt_gauge'))
-        oo9_gauge = "".join(response.POST.getlist('oo9_gauge'))
-        oo_gauge = "".join(response.POST.getlist('oo_gauge'))
-        o_gauge = "".join(response.POST.getlist('o_gauge'))
-        g_gauge = "".join(response.POST.getlist('g_gauge'))
-        sorting_method = response.POST['sorting_method']
-        all_sorting_method.remove(sorting_method)
+        if 'form-search' in response.POST:
+            search = response.POST['search']
+            min_price = response.POST['min_price']
+            max_price = response.POST['max_price']
+            new = "".join(response.POST.getlist('new'))
+            used = "".join(response.POST.getlist('used'))
+            unknown = "".join(response.POST.getlist('unknown'))
+            n_gauge = "".join(response.POST.getlist('n_gauge'))
+            tt_gauge = "".join(response.POST.getlist('tt_gauge'))
+            oo9_gauge = "".join(response.POST.getlist('oo9_gauge'))
+            oo_gauge = "".join(response.POST.getlist('oo_gauge'))
+            o_gauge = "".join(response.POST.getlist('o_gauge'))
+            g_gauge = "".join(response.POST.getlist('g_gauge'))
+            sorting_method = response.POST['sorting_method']
+            all_sorting_method.remove(sorting_method)
 
-        inputted = {"search": search,
-                    "min_price": min_price,
-                    "max_price": max_price,
-                    "new": new,
-                    "used": used,
-                    "unknown": unknown,
-                    "sorting_method": sorting_method,
-                    "all_sorting_method": all_sorting_method, }
+            inputted = {"search": search,
+                        "min_price": min_price,
+                        "max_price": max_price,
+                        "new": new,
+                        "used": used,
+                        "unknown": unknown,
+                        "sorting_method": sorting_method,
+                        "all_sorting_method": all_sorting_method, }
 
-        all_scales = {"N Gauge (1:148)": {"on": n_gauge, "id": "n_gauge"},
-                      "TT Gauge (1:120)": {"on": tt_gauge, "id": "tt_gauge"},
-                      "OO9 Gauge (1:76)": {"on": oo9_gauge, "id": "oo9_gauge"},
-                      "OO/HO Gauge (1:76)": {"on": oo_gauge, "id": "oo_gauge"},
-                      "O Gauge (1:43)": {"on": o_gauge, "id": "o_gauge"},
-                      "G Gauge (1:22.5)": {"on": g_gauge, "id": "g_gauge"},
-                      }
+            all_scales = {"N Gauge (1:148)": {"on": n_gauge, "id": "n_gauge"},
+                          "TT Gauge (1:120)": {"on": tt_gauge, "id": "tt_gauge"},
+                          "OO9 Gauge (1:76)": {"on": oo9_gauge, "id": "oo9_gauge"},
+                          "OO/HO Gauge (1:76)": {"on": oo_gauge, "id": "oo_gauge"},
+                          "O Gauge (1:43)": {"on": o_gauge, "id": "o_gauge"},
+                          "G Gauge (1:22.5)": {"on": g_gauge, "id": "g_gauge"},
+                          }
 
-        if inputted["search"] == "":
-            results = None
-            average = "-"
-        elif 'form-search' in response.POST:
             average, results = get_responses(inputted, all_scales)
+            return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales, "average": average})
+
         elif 'form-update' in response.POST:
-            results = None
-            average = "-"
+            pass
         else:
             if response.user.is_authenticated:
                 for element in response.POST:
@@ -87,7 +85,9 @@ def home(response):
                     response, "You need to <a href='/login'>login</a> to save a result.")
                 results = None
                 average = "-"
-        return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales, "average": average})
+                return HttpResponseRedirect(response.path_info)
+        return HttpResponseRedirect(response.path_info)
+
     else:
         all_sorting_method.remove("none")
 
@@ -130,7 +130,24 @@ def settings(response):
 
 
 def saved(response):
-    return render(response, "app/saved.html", {})
+
+    listings = {
+    }
+
+    saved = user_saved.objects.filter(user=response.user).values()
+    ebay_listings = []
+    amazon_listings = []
+    for save in saved:
+        if str(listing.objects.get(pk=save.get("listing_id")).website) == "Ebay":
+            ebay_listings.append(save)
+        elif str(listing.objects.get(pk=save.get("listing_id")).website) == "Amazon":
+            amazon_listings.append(save)
+    for save in ebay_listings:
+        url = str(listing.objects.get(pk=save.get("listing_id")).link)
+        info = requests.get(url)
+        doc = json.loads(info).decode()
+
+    return render(response, "app/saved.html", {"listings": listings})
 
 
 def login_page(response):
@@ -198,7 +215,7 @@ def save_listing(response, wanted_listing):
             latest_price=wanted_listing["price"], link=wanted_listing["url"], website=wanted_listing["website"])
     else:
         save_listing = listing.objects.all().filter(link=wanted_listing["url"])
-    if not user_saved.objects.filter(user=response.user).exists():
+    if not user_saved.objects.filter(user=response.user, listing=save_listing[0]).exists():
         user_saved.objects.create(
             user=response.user, listing=save_listing, wanted_price=-1)
         return True

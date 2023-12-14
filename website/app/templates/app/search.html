@@ -103,7 +103,8 @@
                 <div class="average"><div class="average-text">Average Price: £{{average}}</div></div>
             </div>
             {% for result in results %}
-                <form method="POST" action="{% url 'home' %}">
+                <form method="POST" action=".">
+                    <div id="form-save"></div>
                     {% csrf_token %}
                     <div class="results-container">
                         <div class="result-bubble">
