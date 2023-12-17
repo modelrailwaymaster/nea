@@ -4,30 +4,33 @@
 {% block title %}Saved{% endblock %}
 {% block css %}<link rel="stylesheet" href="{% static '/css/saved.css'%}">{% endblock %}
 {% block content %}
-{% for saved in listings %}
-    <form method="POST" action=".">
+{% for id,data in listings.items %}
+    <form method="POST">
         <div id="form-save"></div>
             {% csrf_token %}
             <div class="results-container">
                 <div class="result-bubble">
-                {% if saved.website == "Ebay" %}
+                {% if data.website == "Ebay" %}
                     <div class="result-image">
                         <img src="{% static 'images/EbayLogo.png' %}" alt="Ebay Logo" width="200">
                     </div>
-                {% elif saved.website == "Amazon" %}
+                {% elif data.website == "Amazon" %}
                     <div class="result-image">
                         <img src="{% static 'images/AmazonLogo.png' %}" alt="Amazon Logo" width="200">
                     </div>
                 {% endif %}
                 <div class="reuslt-text">
-                    <a href="{{result.url}}" target="_blank"><div class="result-title">{{saved.name}}</div></a>
+                    <a href="{{data.url}}" target="_blank"><div class="result-title">{{data.name}}</div></a>
                     <div class="results-description">description</div>
                     <div class="results-bottom">
                         <div class="results-price-save">
-                            <button name="{{result}}" class="btn my-sm-0 btn-primary save-button" type="submit">Save</button>
                             <div>
-                                <div class="result-price">Price: £{{saved.price}}</div>
-                                <div class="result-price">Shipping: £{{saved.shipping_cost}}</div>
+                                <button name="{{data}} save" class="btn my-sm-0 btn-primary save-button" type="submit">Save</button>
+                                <button name="{{data}} delete" class="btn my-sm-0 btn-primary save-button" type="submit">Delete</button>
+                            </div>
+                            <div>
+                                <div class="result-price">Price: £{{data.price}}</div>
+                                <div class="result-price">Shipping: £{{data.shipping_cost}}</div>
                             </div>
                         </div>
                     </div>

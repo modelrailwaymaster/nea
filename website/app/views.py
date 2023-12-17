@@ -17,6 +17,7 @@ import operator
 
 
 def home(response):
+
     all_sorting_method = ["none", "price",
                           "customer review", "newest first"]
     all_scales = {"N Gauge (1:148)": 'n_gauge',
@@ -68,6 +69,7 @@ def home(response):
         elif 'form-update' in response.POST:
             pass
         else:
+
             if response.user.is_authenticated:
                 for element in response.POST:
                     if "{" in element:
@@ -130,24 +132,28 @@ def settings(response):
 
 
 def saved(response):
-
     listings = {
     }
 
-    saved = user_saved.objects.filter(user=response.user).values()
-    ebay_listings = []
-    amazon_listings = []
-    for save in saved:
-        if str(listing.objects.get(pk=save.get("listing_id")).website) == "Ebay":
-            ebay_listings.append(save)
-        elif str(listing.objects.get(pk=save.get("listing_id")).website) == "Amazon":
-            amazon_listings.append(save)
-    for save in ebay_listings:
-        url = str(listing.objects.get(pk=save.get("listing_id")).link)
-        info = requests.get(url)
-        doc = json.loads(info).decode()
+    if response.method == "POST":
 
-    return render(response, "app/saved.html", {"listings": listings})
+        print(response.POST)
+        if "save" in response.POST:
+            print("save")
+        elif "delete" in response.POST:
+            print("delete")
+
+        saved = user_saved.objects.filter(user=response.user).values()
+        for save in saved:
+            listings[listing.objects.get(pk=save.get("listing_id")).id] = listing.objects.get(
+                pk=save.get("listing_id")).__dict__
+        return render(response, "app/saved.html", {"listings": listings})
+    else:
+        saved = user_saved.objects.filter(user=response.user).values()
+        for save in saved:
+            listings[listing.objects.get(pk=save.get("listing_id")).id] = listing.objects.get(
+                pk=save.get("listing_id")).__dict__
+        return render(response, "app/saved.html", {"listings": listings})
 
 
 def login_page(response):
@@ -210,14 +216,22 @@ def delete_account(response):
 
 
 def save_listing(response, wanted_listing):
-    if not listing.objects.filter(link=wanted_listing["url"]).exists():
+    if not listing.objects.filter(url=wanted_listing["url"]).exists():
         save_listing = listing.objects.create(
-            latest_price=wanted_listing["price"], link=wanted_listing["url"], website=wanted_listing["website"])
+            name=wanted_listing["name"],
+            price=wanted_listing["price"],
+            shipping=wanted_listing["shipping_cost"],
+            currency=wanted_listing["currency"],
+            url=wanted_listing["url"],
+            location=wanted_listing["location"],
+            image=wanted_listing["image"],
+            review=wanted_listing["review"],
+            website=wanted_listing["website"])
     else:
-        save_listing = listing.objects.all().filter(link=wanted_listing["url"])
+        save_listing = listing.objects.all().filter(url=wanted_listing["url"])
     if not user_saved.objects.filter(user=response.user, listing=save_listing[0]).exists():
         user_saved.objects.create(
-            user=response.user, listing=save_listing, wanted_price=-1)
+            user=response.user, listing=save_listing[0], wanted_price=-1)
         return True
     else:
         return False
@@ -230,59 +244,59 @@ def get_responses(inputted, all_scales):
     results = []
 
     # ebay
-    ebay_filters = []
+    # ebay_filters = []
 
-    api = Connection(domain='svcs.sandbox.ebay.com',
-                     appid='HenryOwe-NEA-SBX-2ac348da7-f6ef1a16', config_file=None)
-    ebay_params = {
-        'keywords': inputted["search"],
-        'itemFilter': ebay_filters,
-        'paginationInput': {
-            'entriesPerPage': Ebay_number_of_returns,
-            'pageNumber': 1
-        },
-        'sortOrder': 'PricePlusShippingLowest',
-    }
+    # api = Connection(domain='svcs.sandbox.ebay.com',
+    #                 appid='HenryOwe-NEA-SBX-2ac348da7-f6ef1a16', config_file=None)
+    # ebay_params = {
+    #    'keywords': inputted["search"],
+    #    'itemFilter': ebay_filters,
+    #    'paginationInput': {
+    #        'entriesPerPage': Ebay_number_of_returns,
+    #        'pageNumber': 1
+    #    },
+    #    'sortOrder': 'PricePlusShippingLowest',
+    # }
 
-    ebay_response = json.loads(api.execute('findItemsAdvanced', ebay_params).json()).get(
-        "searchResult").get("item")
+    # ebay_response = json.loads(api.execute('findItemsAdvanced', ebay_params, verify=False).json()).get(
+    #    "searchResult").get("item")
 
-    for item in ebay_response:
-        results_class_list.append(result_class(
-            item.get("title"),
-            item.get("sellingStatus").get("currentPrice").get("value"),
-            item.get("shippingInfo").get("shippingServiceCost").get("value"),
-            item.get("sellingStatus").get("currentPrice").get("_currencyId"),
-            item.get("viewItemURL"),
-            item.get("location"),
-            item.get("viewItemURL"),
-            "",
-            "Ebay"))
+    # for item in ebay_response:
+    #    results_class_list.append(result_class(
+    #        item.get("title"),
+    #        item.get("sellingStatus").get("currentPrice").get("value"),
+    #        item.get("shippingInfo").get("shippingServiceCost").get("value"),
+    #        item.get("sellingStatus").get("currentPrice").get("_currencyId"),
+    #        item.get("viewItemURL"),
+    #        item.get("location"),
+   #         item.get("viewItemURL"),
+   #         "",
+   #         "Ebay"))
 
     # amazon
     # amazon_params = {
-    #    'api_key': '5A6709D3BB1C4232BB93E0955F9934BD',
-    #    'type': 'search',
-    #    'amazon_domain': 'amazon.com',
-    #    'search_term': inputted["search"],
-    #    'output': 'json',
-    #    'page': '1'
+    #   'api_key': '5A6709D3BB1C4232BB93E0955F9934BD',
+    #   'type': 'search',
+    #   'amazon_domain': 'amazon.com',
+    #   'search_term': inputted["search"],
+    #   'output': 'json',
+    #   'page': '1'
     # }
 
     # amazon_results = requests.get(
-    #    'https://api.asindataapi.com/request', amazon_params).json().get("search_results")
+    #   'https://api.asindataapi.com/request', amazon_params,  verify=False).json().get('search_results')
     # for i in range(Amazon_number_of_returns):
     #    results_class_list.append(result_class(
-    #        amazon_results[i].get("title"),
-    #        amazon_results[i].get("price").get("value"),
-    #        0,
-    #        amazon_results[i].get("price").get("currency"),
-    #        amazon_results[i].get("link"),
-    #        None,
-    #        amazon_results[i].get("image"),
-    #        "",
-    #        "Amazon"
-    #    ))
+    #       amazon_results[i].get('title'),
+    #       amazon_results[i].get('price').get('value'),
+    #       0,
+    #       amazon_results[i].get('price').get('currency'),
+    #       amazon_results[i].get('link'),
+    #       None,
+    #       amazon_results[i].get('image'),
+    #       "",
+    #       "Amazon"
+    #   ))
 
     # sorting
     # sort = True
@@ -296,6 +310,18 @@ def get_responses(inputted, all_scales):
     # if sort:
     #    results_class_list = sorted(
     #        results_class_list, key=operator.attrgetter(sorting_mode))
+
+    results_class_list.append(result_class(
+        "test",
+        "12.5",
+        "2",
+        "GBP",
+        "www.google.com",
+        "uk",
+        "",
+        "1",
+        "Ebay"
+    ))
 
     for result in results_class_list:
         results.append(result.get_dict())
@@ -322,7 +348,7 @@ class result_class():
         self.website = website
 
     def get_dict(self):
-        return {"name": self.name, "price": self.price, "shipping_cost": self.shipping_cost, "url": self.url, "location": self.location, "image": self.image, "website": self.website}
+        return {"name": self.name, "price": self.price, "shipping_cost": self.shipping_cost, "currency": self.currency, "url": self.url, "location": self.location, "image": self.image, "review": self.review, "website": self.website}
 
     def display(self):
         print("name:", self.name, "price:", self.price, "shipping_cost:", self.shipping_cost, "url:",
