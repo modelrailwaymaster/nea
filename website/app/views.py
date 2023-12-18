@@ -30,7 +30,7 @@ def home(response):
 
     if response.method == "POST":
 
-        if 'form-search' in response.POST:
+        if 'form-search' in response.POST or 'form-update' in response.POST:
             search = response.POST['search']
             min_price = response.POST['min_price']
             max_price = response.POST['max_price']
@@ -66,13 +66,13 @@ def home(response):
             average, results = get_responses(inputted, all_scales)
             return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales, "average": average})
 
-        elif 'form-update' in response.POST:
-            pass
         else:
 
             if response.user.is_authenticated:
+                print(response.POST)
                 for element in response.POST:
                     if "{" in element:
+                        print(element)
                         listing = json.loads(element.replace("'", '"'))
                 done = save_listing(response, listing)
                 results = None
@@ -137,23 +137,37 @@ def saved(response):
 
     if response.method == "POST":
 
-        print(response.POST)
-        if "save" in response.POST:
-            print("save")
-        elif "delete" in response.POST:
-            print("delete")
+        if "save" in list(response.POST.keys())[-1]:
+            new_wanted_price = response.POST["wanted_price"]
+            if new_wanted_price in ["none", "None", 0, "0"]:
+                new_wanted_price = -1
+            else:
+                new_wanted_price = int(new_wanted_price)
+
+            updated_listing = user_saved.objects.get(listing=listing.objects.get(
+                id=int(list(response.POST)[-1].replace(" save", ""))))
+            updated_listing.wanted_price = new_wanted_price
+            updated_listing.save()
+
+        elif "delete" in list(response.POST.keys())[-1]:
+            user_saved.objects.get(user=response.user, listing=listing.objects.get(
+                id=int(list(response.POST)[-1].replace(" delete", "")))).delete()
+            messages.success(response, "Listing deleted")
 
         saved = user_saved.objects.filter(user=response.user).values()
         for save in saved:
             listings[listing.objects.get(pk=save.get("listing_id")).id] = listing.objects.get(
                 pk=save.get("listing_id")).__dict__
-        return render(response, "app/saved.html", {"listings": listings})
+            listings[listing.objects.get(pk=save.get(
+                "listing_id")).id]["wanted_price"] = save["wanted_price"]
     else:
         saved = user_saved.objects.filter(user=response.user).values()
         for save in saved:
             listings[listing.objects.get(pk=save.get("listing_id")).id] = listing.objects.get(
                 pk=save.get("listing_id")).__dict__
-        return render(response, "app/saved.html", {"listings": listings})
+            listings[listing.objects.get(pk=save.get(
+                "listing_id")).id]["wanted_price"] = save["wanted_price"]
+    return render(response, "app/saved.html", {"listings": listings})
 
 
 def login_page(response):
@@ -217,7 +231,7 @@ def delete_account(response):
 
 def save_listing(response, wanted_listing):
     if not listing.objects.filter(url=wanted_listing["url"]).exists():
-        save_listing = listing.objects.create(
+        save_listing = [listing.objects.create(
             name=wanted_listing["name"],
             price=wanted_listing["price"],
             shipping=wanted_listing["shipping_cost"],
@@ -226,7 +240,7 @@ def save_listing(response, wanted_listing):
             location=wanted_listing["location"],
             image=wanted_listing["image"],
             review=wanted_listing["review"],
-            website=wanted_listing["website"])
+            website=wanted_listing["website"])]
     else:
         save_listing = listing.objects.all().filter(url=wanted_listing["url"])
     if not user_saved.objects.filter(user=response.user, listing=save_listing[0]).exists():
@@ -274,29 +288,32 @@ def get_responses(inputted, all_scales):
    #         "Ebay"))
 
     # amazon
-    # amazon_params = {
-    #   'api_key': '5A6709D3BB1C4232BB93E0955F9934BD',
-    #   'type': 'search',
-    #   'amazon_domain': 'amazon.com',
-    #   'search_term': inputted["search"],
-    #   'output': 'json',
-    #   'page': '1'
-    # }
+    amazon_params = {
+        'api_key': '5A6709D3BB1C4232BB93E0955F9934BD',
+        'type': 'search',
+        'amazon_domain': 'amazon.com',
+        'search_term': inputted["search"],
+        'output': 'json',
+        'page': '1'
+    }
 
-    # amazon_results = requests.get(
-    #   'https://api.asindataapi.com/request', amazon_params,  verify=False).json().get('search_results')
-    # for i in range(Amazon_number_of_returns):
-    #    results_class_list.append(result_class(
-    #       amazon_results[i].get('title'),
-    #       amazon_results[i].get('price').get('value'),
-    #       0,
-    #       amazon_results[i].get('price').get('currency'),
-    #       amazon_results[i].get('link'),
-    #       None,
-    #       amazon_results[i].get('image'),
-    #       "",
-    #       "Amazon"
-    #   ))
+    amazon_results = requests.get(
+        'https://api.asindataapi.com/request', amazon_params,  verify=False).json().get('search_results')
+    for i in range(Amazon_number_of_returns):
+        try:
+            results_class_list.append(result_class(
+                amazon_results[i].get('title'),
+                amazon_results[i].get('price').get('value'),
+                0,
+                amazon_results[i].get('price').get('currency'),
+                "/".join(amazon_results[i].get('link').split("/")[0:6]),
+                "None",
+                amazon_results[i].get('image'),
+                "",
+                "Amazon"
+            ))
+        except:
+            pass
 
     # sorting
     # sort = True
@@ -310,18 +327,6 @@ def get_responses(inputted, all_scales):
     # if sort:
     #    results_class_list = sorted(
     #        results_class_list, key=operator.attrgetter(sorting_mode))
-
-    results_class_list.append(result_class(
-        "test",
-        "12.5",
-        "2",
-        "GBP",
-        "www.google.com",
-        "uk",
-        "",
-        "1",
-        "Ebay"
-    ))
 
     for result in results_class_list:
         results.append(result.get_dict())

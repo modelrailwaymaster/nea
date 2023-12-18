@@ -114,7 +114,7 @@
                                 </div>
                             {% elif result.website == "Amazon" %}
                                 <div class="result-image">
-                                    <img src="{% static 'images/AmazonLogo.png' %}" alt="Amazon Logo" width="200">
+                                    <img src="{{result.image}}" alt="Amazon Logo" width="200" height="200">
                                 </div>
                             {% endif %}
                             <div class="reuslt-text">

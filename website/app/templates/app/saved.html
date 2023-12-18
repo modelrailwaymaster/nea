@@ -3,9 +3,12 @@
 {% load static %}
 {% block title %}Saved{% endblock %}
 {% block css %}<link rel="stylesheet" href="{% static '/css/saved.css'%}">{% endblock %}
-{% block content %}
+{% block content %} 
+{% if listings|length < 1 %} 
+    <div class="no-saved">There are no saved listings</div>
+{% endif %}
 {% for id,data in listings.items %}
-    <form method="POST">
+    <form method="POST">    
         <div id="form-save"></div>
             {% csrf_token %}
             <div class="results-container">
@@ -16,7 +19,7 @@
                     </div>
                 {% elif data.website == "Amazon" %}
                     <div class="result-image">
-                        <img src="{% static 'images/AmazonLogo.png' %}" alt="Amazon Logo" width="200">
+                        <img src="{{data.image}}" alt="Amazon Logo" width="200" height="200">
                     </div>
                 {% endif %}
                 <div class="reuslt-text">
@@ -24,13 +27,25 @@
                     <div class="results-description">description</div>
                     <div class="results-bottom">
                         <div class="results-price-save">
-                            <div>
-                                <button name="{{data}} save" class="btn my-sm-0 btn-primary save-button" type="submit">Save</button>
-                                <button name="{{data}} delete" class="btn my-sm-0 btn-primary save-button" type="submit">Delete</button>
+                            <div class="wanted_price_container">
+                                <label class="wanted_price_label" for="wanted_price">Wanted Price: £</label>
+                                <div class="wanted_price_input_container">
+                                    {% if data.wanted_price == -1 %}
+                                        <input class="wanted_price" name="wanted_price" type="text" pattern="none|None|\d+" min="0" value="None">
+                                    {% else %}
+                                        <input class="wanted_price" name="wanted_price" type="number" min="0" pattern="none|None|\d+" value="{{data.wanted_price}}">
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div>
-                                <div class="result-price">Price: £{{data.price}}</div>
-                                <div class="result-price">Shipping: £{{data.shipping_cost}}</div>
+                            <div> 
+                                <button name="{{data.id}} save" class="btn my-sm-0 btn-primary save-button" type="submit">Save</button>
+                                <button name="{{data.id}} delete" class="btn my-sm-0 btn-primary save-button" type="submit">Delete</button>
+                            </div>
+                            <div class="prices">
+                                <div>
+                                    <div class="result-price">Price: £{{data.price}}</div>
+                                    <div class="result-price">Shipping: £{{data.shipping_cost}}</div>
+                                </div>
                             </div>
                         </div>
                     </div>

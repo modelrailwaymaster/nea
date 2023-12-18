@@ -1,0 +1,42 @@
+.results-price-save{
+    display: grid;
+    width: 500px;
+    grid-template-columns: 250px 100px 200PX !important;
+}
+.wanted_price{
+    width: 100px;
+    border: none;
+}
+.wanted_price_container{
+    display: flex;
+    align-items: flex-end;
+    height: 100px;
+}
+
+.wanted_price_label{
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.wanted_price_input_container{
+    padding-bottom: 10px;
+}
+
+.save-button{
+    margin-top: 10px !important;
+}
+
+.prices{
+    display: flex;
+    align-items: flex-end;
+    height: 100px;
+    padding-left: 25px;
+}
+
+.result-price{
+    text-align: center;
+}
+
+.results-container{
+    padding: 15px;
+}
