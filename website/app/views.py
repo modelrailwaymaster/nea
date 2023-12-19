@@ -5,9 +5,6 @@ from .forms import create_user_form, update_user_details_form
 from django.contrib.auth.models import User
 from app.models import user_saved, listing
 from django.http import HttpResponseRedirect
-
-from ebaysdk.exception import ConnectionError
-from ebaysdk.finding import Connection
 import json
 import requests
 import operator
@@ -69,10 +66,8 @@ def home(response):
         else:
 
             if response.user.is_authenticated:
-                print(response.POST)
                 for element in response.POST:
                     if "{" in element:
-                        print(element)
                         listing = json.loads(element.replace("'", '"'))
                 done = save_listing(response, listing)
                 results = None
@@ -240,7 +235,8 @@ def save_listing(response, wanted_listing):
             location=wanted_listing["location"],
             image=wanted_listing["image"],
             review=wanted_listing["review"],
-            website=wanted_listing["website"])]
+            website=wanted_listing["website"],
+            condition=wanted_listing["condition"])]
     else:
         save_listing = listing.objects.all().filter(url=wanted_listing["url"])
     if not user_saved.objects.filter(user=response.user, listing=save_listing[0]).exists():
@@ -256,49 +252,57 @@ def get_responses(inputted, all_scales):
     Amazon_number_of_returns = 7
     results_class_list = []
     results = []
+    search = inputted["search"]
+    for i in all_scales:
+        if dict(all_scales.get(i)).get('on') == 'on':
+            search += " "+i
 
     # ebay
-    # ebay_filters = []
+    ebay_params = {
+        'api_key': '728A2816A69F498D85B6EDA746D9153B',
+        'ebay_domain': 'ebay.co.uk',
+        'search_term': search,
+        'type': 'search'
+    }
 
-    # api = Connection(domain='svcs.sandbox.ebay.com',
-    #                 appid='HenryOwe-NEA-SBX-2ac348da7-f6ef1a16', config_file=None)
-    # ebay_params = {
-    #    'keywords': inputted["search"],
-    #    'itemFilter': ebay_filters,
-    #    'paginationInput': {
-    #        'entriesPerPage': Ebay_number_of_returns,
-    #        'pageNumber': 1
-    #    },
-    #    'sortOrder': 'PricePlusShippingLowest',
-    # }
+    ebay_results = requests.get(
+        'https://api.countdownapi.com/request', ebay_params).json().get('search_results')
 
-    # ebay_response = json.loads(api.execute('findItemsAdvanced', ebay_params, verify=False).json()).get(
-    #    "searchResult").get("item")
-
-    # for item in ebay_response:
-    #    results_class_list.append(result_class(
-    #        item.get("title"),
-    #        item.get("sellingStatus").get("currentPrice").get("value"),
-    #        item.get("shippingInfo").get("shippingServiceCost").get("value"),
-    #        item.get("sellingStatus").get("currentPrice").get("_currencyId"),
-    #        item.get("viewItemURL"),
-    #        item.get("location"),
-   #         item.get("viewItemURL"),
-   #         "",
-   #         "Ebay"))
+    for i in range(Ebay_number_of_returns):
+        try:
+            condition = "unknown"
+            if ebay_results[i].get("condition") == "Brand New":
+                condition = "new"
+            if ebay_results[i].get("condition") == "Used":
+                condition = "used"
+            results_class_list.append(result_class(
+                ebay_results[i].get('title'),
+                ebay_results[i].get('price').get('value'),
+                0,
+                "GBP",
+                ebay_results[i].get('link'),
+                "None",
+                ebay_results[i].get('image'),
+                ebay_results[i].get('seller_info').get(
+                    "positive_feedback_percent"),
+                "Ebay",
+                condition
+            ))
+        except:
+            pass
 
     # amazon
     amazon_params = {
         'api_key': '5A6709D3BB1C4232BB93E0955F9934BD',
         'type': 'search',
         'amazon_domain': 'amazon.com',
-        'search_term': inputted["search"],
+        'search_term': search,
         'output': 'json',
         'page': '1'
     }
 
     amazon_results = requests.get(
-        'https://api.asindataapi.com/request', amazon_params,  verify=False).json().get('search_results')
+        'https://api.asindataapi.com/request', amazon_params).json().get('search_results')
     for i in range(Amazon_number_of_returns):
         try:
             results_class_list.append(result_class(
@@ -309,39 +313,65 @@ def get_responses(inputted, all_scales):
                 "/".join(amazon_results[i].get('link').split("/")[0:6]),
                 "None",
                 amazon_results[i].get('image'),
-                "",
-                "Amazon"
+                0,
+                "Amazon",
+                "New"
             ))
         except:
             pass
 
-    # sorting
-    # sort = True
-    # if inputted["sorting_method"] == "none":
-    #    sort = False
-    # elif inputted["sorting_method"] == "price":
-    #    sorting_mode = "price"
-    # elif inputted["sorting_method"] == "customer review":
-    #    sorting_mode
+    # filtering
+    # price
+    results_class_list_copy = results_class_list.copy()
+    if inputted["min_price"] != '':
+        for response in results_class_list_copy:
+            if float(response.price) < float(inputted["min_price"]):
+                results_class_list.remove(response)
+    if inputted["max_price"] != '':
+        for response in results_class_list_copy:
+            if float(response.price) > float(inputted["max_price"]):
+                results_class_list.remove(response)
+    # condition
+    if inputted["new"] != '' or inputted["used"] != '' or inputted["unknown"] != '':
+        temp = []
+        for response in results_class_list:
+            if response.condition == "new" and inputted["new"] != '':
+                temp.append(response)
+            elif response.condition == "used" and inputted["used"] != '':
+                temp.append(response)
+            elif response.condition == "unknown" and inputted["unknown"] != '':
+                temp.append(response)
+            else:
+                temp.append(response)
+        results_class_list = temp.copy()
 
-    # if sort:
-    #    results_class_list = sorted(
-    #        results_class_list, key=operator.attrgetter(sorting_mode))
+    # sorting
+    if inputted["sorting_method"] == "none":
+        pass
+    elif inputted["sorting_method"] == "price":
+        results_class_list = sorted(
+            results_class_list, key=lambda x: float(x.price))
+    elif inputted["sorting_method"] == "customer review":
+        results_class_list = sorted(
+            results_class_list, key=lambda x: float(x.review))
 
     for result in results_class_list:
         results.append(result.get_dict())
 
-    average = 0
-    for result in results_class_list:
-        average += float(result.price)
-    average /= len(results_class_list)
-    average = ("%.2f" % float(average))
+    try:
+        average = 0
+        for result in results_class_list:
+            average += float(result.price)
+        average /= len(results_class_list)
+        average = ("%.2f" % float(average))
+    except:
+        average = "-"
 
     return average, results
 
 
 class result_class():
-    def __init__(self, name, price, shipping_cost, currency, url, location, image, review, website):
+    def __init__(self, name, price, shipping_cost, currency, url, location, image, review, website, condition):
         self.name = name
         self.price = ("%.2f" % float(price))
         self.shipping_cost = ("%.2f" % float(shipping_cost))
@@ -349,12 +379,13 @@ class result_class():
         self.url = url
         self.location = location
         self.image = image
-        self.review = review
+        self.review = int(review)
         self.website = website
+        self.condition = condition
 
     def get_dict(self):
-        return {"name": self.name, "price": self.price, "shipping_cost": self.shipping_cost, "currency": self.currency, "url": self.url, "location": self.location, "image": self.image, "review": self.review, "website": self.website}
+        return {"name": self.name, "price": self.price, "shipping_cost": self.shipping_cost, "currency": self.currency, "url": self.url, "location": self.location, "image": self.image, "review": self.review, "website": self.website, "condition": self.condition}
 
     def display(self):
-        print("name:", self.name, "price:", self.price, "shipping_cost:", self.shipping_cost, "url:",
-              self.url, "location:", self.location, "image:", self.image, "website:", self.website)
+        print("name", self.name, "price", self.price, "shipping_cost", self.shipping_cost, "currency", self.currency, "url", self.url,
+              "location", self.location, "image", self.image, "review", self.review, "website", self.website, "condition", self.condition)

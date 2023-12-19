@@ -64,15 +64,14 @@
             </label>
             <div class="filter-title">Scale:</div>
             {% for display,id in all_scales.items %}
-            {{id.on}}
             <label class="left-align">
                 <div class="checkbox-wrapper-4">
                     {% if id.on == "on" %}
-                        <input class="inp-cbx" name="{{id}}" id="{{id}}" type="checkbox" checked/>
+                        <input class="inp-cbx" name="{{id.id}}" id="{{id.id}}" type="checkbox" checked/>
                     {% else %}
-                        <input class="inp-cbx" name="{{id}}" id="{{id}}" type="checkbox"/>
+                        <input class="inp-cbx" name="{{id.id}}" id="{{id.id}}" type="checkbox"/>
                     {% endif %}
-                    <label class="cbx" for="{{id}}"><span>
+                    <label class="cbx" for="{{id.id}}"><span>
                     <svg width="12px" height="10px">
                         <use xlink:href="#check-4"></use>
                     </svg></span><span class="checkbox-label">{{display}}</span></label>
@@ -102,6 +101,9 @@
                 </div>
                 <div class="average"><div class="average-text">Average Price: £{{average}}</div></div>
             </div>
+            {% if results|length < 1 %} 
+                <div class="no-saved">No result found </div>
+            {% endif %}
             {% for result in results %}
                 <form method="POST" action=".">
                     <div id="form-save"></div>
@@ -110,7 +112,7 @@
                         <div class="result-bubble">
                             {% if result.website == "Ebay" %}
                                 <div class="result-image">
-                                    <img src="{% static 'images/EbayLogo.png' %}" alt="Ebay Logo" width="200">
+                                    <img src="{{result.image}}" alt="Ebay Logo" width="200">
                                 </div>
                             {% elif result.website == "Amazon" %}
                                 <div class="result-image">
@@ -119,7 +121,6 @@
                             {% endif %}
                             <div class="reuslt-text">
                                 <a href="{{result.url}}" target="_blank"><div class="result-title">{{result.name}}</div></a>
-                                <div class="results-description">description</div>
                                 <div class="results-bottom">
                                     <div class="results-price-save">
                                         <button name="{{result}}" class="btn my-sm-0 btn-primary save-button" type="submit">Save</button>

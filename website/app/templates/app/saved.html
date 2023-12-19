@@ -15,7 +15,7 @@
                 <div class="result-bubble">
                 {% if data.website == "Ebay" %}
                     <div class="result-image">
-                        <img src="{% static 'images/EbayLogo.png' %}" alt="Ebay Logo" width="200">
+                        <img src="{{data.image}}" alt="Ebay Logo" width="200">
                     </div>
                 {% elif data.website == "Amazon" %}
                     <div class="result-image">

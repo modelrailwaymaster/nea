@@ -14,6 +14,7 @@ class listing(models.Model):
     image = models.CharField(max_length=250, default=0)
     review = models.CharField(max_length=250, default=0)
     website = models.CharField(max_length=250, default=0)
+    condition = models.CharField(max_length=250, default=0)
 
 
 class user_saved(models.Model):

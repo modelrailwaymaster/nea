@@ -309,3 +309,10 @@ img{
     max-width:200px;
     max-height:200px;
 }
+
+.no-saved{
+    font-weight: bold;
+    font-size: 25px;
+    color: black;
+    text-align: center;
+}
