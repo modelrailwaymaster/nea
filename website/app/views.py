@@ -25,9 +25,12 @@ def home(response):
                   "G Gauge (1:22.5)": 'g_gauge',
                   }
 
+    # if user is searching updating or saving
     if response.method == "POST":
 
+        # if user is searching or updating
         if 'form-search' in response.POST or 'form-update' in response.POST:
+            # gets all user inputs
             search = response.POST['search']
             min_price = response.POST['min_price']
             max_price = response.POST['max_price']
@@ -60,15 +63,18 @@ def home(response):
                           "G Gauge (1:22.5)": {"on": g_gauge, "id": "g_gauge"},
                           }
 
+            # uses apis to get results
             average, results = get_responses(inputted, all_scales)
             return render(response, "app/home.html", {"inputted": inputted, "results": results, "all_scales": all_scales, "average": average})
 
+        # if user saves a listing
         else:
 
             if response.user.is_authenticated:
                 for element in response.POST:
                     if "{" in element:
                         listing = json.loads(element.replace("'", '"'))
+                # attempts to saves listing
                 done = save_listing(response, listing)
                 results = None
                 average = "-"
@@ -82,9 +88,11 @@ def home(response):
                     response, "You need to <a href='/login'>login</a> to save a result.")
                 results = None
                 average = "-"
+        # return to current page
                 return HttpResponseRedirect(response.path_info)
         return HttpResponseRedirect(response.path_info)
 
+    # if loading page for first time
     else:
         all_sorting_method.remove("none")
 
@@ -108,20 +116,24 @@ def home(response):
 
 
 def settings(response):
+    # checks if logged in
     if response.user.is_authenticated:
+        # get user from database
         current_user = User.objects.get(id=response.user.id)
         form = update_user_details_form(
             response.POST or None, instance=current_user)
+        # checks if form was submitted and valid
         if form.is_valid():
+            # saves info
             form.save()
             login(response, current_user,
                   backend='django.contrib.auth.backends.ModelBackend')
             messages.success(response, "Information updated")
         elif response.method == "POST":
             messages.success(response, "Information unable to be updated")
-
+        # calls page with settings when logged in
         return render(response, "app/settings.html", {"form": form})
-
+    # return page when not logged in
     else:
         return render(response, "app/settings.html", {})
 
@@ -130,8 +142,10 @@ def saved(response):
     listings = {
     }
 
+    # checks if user is save deleting or updating there saved listing
     if response.method == "POST":
 
+        # if save then gets wanted price and updates database
         if "save" in list(response.POST.keys())[-1]:
             new_wanted_price = response.POST["wanted_price"]
             if new_wanted_price in ["none", "None", 0, "0"]:
@@ -144,11 +158,13 @@ def saved(response):
             updated_listing.wanted_price = new_wanted_price
             updated_listing.save()
 
+        # if delete then removes form database
         elif "delete" in list(response.POST.keys())[-1]:
             user_saved.objects.get(user=response.user, listing=listing.objects.get(
                 id=int(list(response.POST)[-1].replace(" delete", "")))).delete()
             messages.success(response, "Listing deleted")
 
+        # gets all saved and adds to dict and sorts
         saved = user_saved.objects.filter(user=response.user).values()
         for save in saved:
             listings[listing.objects.get(pk=save.get("listing_id")).id] = listing.objects.get(
@@ -156,35 +172,45 @@ def saved(response):
             listings[listing.objects.get(pk=save.get(
                 "listing_id")).id]["wanted_price"] = save["wanted_price"]
     else:
+        # gets all saved and adds to dict and sorts
         saved = user_saved.objects.filter(user=response.user).values()
         for save in saved:
             listings[listing.objects.get(pk=save.get("listing_id")).id] = listing.objects.get(
                 pk=save.get("listing_id")).__dict__
             listings[listing.objects.get(pk=save.get(
                 "listing_id")).id]["wanted_price"] = save["wanted_price"]
+    # returns page with data
     return render(response, "app/saved.html", {"listings": listings})
 
 
 def login_page(response):
+    # check if user trying to login
     if response.method == "POST":
         username = response.POST["username"]
         password = response.POST["password"]
+        # checks if username and password exits and match in database
         user = authenticate(response, username=username, password=password)
         if user is not None:
+            # if user is valid the log in user
             login(response, user)
             messages.success(response, "Logged in")
             return redirect("/")
         else:
+            # if invalid login
             messages.success(response, "There was an error login")
             return render(response, "app/login.html", {})
+    # if not return page for login
     else:
         return render(response, "app/login.html", {})
 
 
 def signup(response):
+    # checks if user is trying to signup
     if response.method == "POST":
         form = create_user_form(response.POST)
+        # checks if user input is valid
         if form.is_valid():
+            # adds user to database
             form.save()
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password1"]
@@ -195,7 +221,7 @@ def signup(response):
         else:
             messages.success(response, "Sign up unsuccessful")
             return render(response, "app/signup.html", {"form": form})
-
+    # creates blank form and returns page to user
     else:
         form = create_user_form()
         return render(response, "app/signup.html", {"form": form})
@@ -225,7 +251,9 @@ def delete_account(response):
 
 
 def save_listing(response, wanted_listing):
+    # checks if listing exists in the database
     if not listing.objects.filter(url=wanted_listing["url"]).exists():
+        # if doesnt exist then it creates a new entry into the database
         save_listing = [listing.objects.create(
             name=wanted_listing["name"],
             price=wanted_listing["price"],
@@ -238,11 +266,15 @@ def save_listing(response, wanted_listing):
             website=wanted_listing["website"],
             condition=wanted_listing["condition"])]
     else:
+        # if exists gen get for database
         save_listing = listing.objects.all().filter(url=wanted_listing["url"])
+    # checks if already link between user and listing
     if not user_saved.objects.filter(user=response.user, listing=save_listing[0]).exists():
+        # creates new database entry
         user_saved.objects.create(
             user=response.user, listing=save_listing[0], wanted_price=-1)
         return True
+    # doesnt update database
     else:
         return False
 
@@ -349,14 +381,42 @@ def get_responses(inputted, all_scales):
     if inputted["sorting_method"] == "none":
         pass
     elif inputted["sorting_method"] == "price":
-        results_class_list = sorted(
-            results_class_list, key=lambda x: float(x.price))
+        mergesort(results, 0, len(results)-1, "price")
     elif inputted["sorting_method"] == "customer review":
-        results_class_list = sorted(
-            results_class_list, key=lambda x: float(x.review))
+        mergesort(results, 0, len(results)-1, "review")
 
-    for result in results_class_list:
-        results.append(result.get_dict())
+    def merge(arr, start, mid, end, attribute):
+        start2 = mid + 1
+        if getattr(arr[mid], attribute) <= getattr(arr[start2], attribute):
+            return
+
+        while (start <= mid and start2 <= end):
+
+            if getattr(arr[start], attribute) <= getattr(arr[start2], attribute):
+                start += 1
+            else:
+                value = arr[start2]
+                index = start2
+
+                while (index != start):
+                    arr[index] = arr[index - 1]
+                    index -= 1
+
+                arr[start] = value
+                start += 1
+                mid += 1
+                start2 += 1
+
+    def mergesort(array, left, right, attribute):
+        if (left < right):
+            middle = left + (right - left) // 2
+            mergesort(array, left, middle, attribute)
+            mergesort(array, middle + 1, right, attribute)
+            merge(array, left, middle, right, attribute)
+
+    mergesort(results, 0, len(results)-1, "price")
+
+    mergesort(results, 0, len(results)-1, "shipping")
 
     try:
         average = 0
